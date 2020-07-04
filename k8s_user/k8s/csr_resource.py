@@ -1,22 +1,25 @@
+from typing import Optional, Dict, List
+from datetime import datetime, timezone
 import kubernetes
 from kubernetes.client.rest import ApiException
 
+
 class CSRResource:
     def __init__(
-            self,
-            name: str,
-            csr_str: str,
-            metadata: Optional[Dict] = None,
-            groups: Optional[List] = None,
-            usages: Optional[List] = None,
-        ):
+        self,
+        name: str,
+        csr_str: str,
+        metadata: Optional[Dict] = None,
+        groups: Optional[List] = None,
+        usages: Optional[List] = None,
+    ):
         self._resource_cache = None
         self.name = name
         self.csr_str = csr_str
         self.metadata = metadata if isinstance(metadata, dict) else {}
-        self.groups = groups if groups else ['system:authenticated']
+        self.groups = groups if groups else ["system:authenticated"]
         self.usages = usages if usages else ["client auth"]
-        
+
     def get_text(self):
         """Return the text of the CertificateSigningRequest that will be set to the
         kubernetes api."""
@@ -26,11 +29,10 @@ class CSRResource:
             kind="CertificateSigningRequest",
             metadata=kubernetes.client.V1ObjectMeta(**metadata),
             spec=kubernetes.client.models.v1beta1_certificate_signing_request_spec.V1beta1CertificateSigningRequestSpec(
-                request=self.csr_str,
-                groups=self.groups,
-                usages=self.usages,
-            ))
-    
+                request=self.csr_str, groups=self.groups, usages=self.usages,
+            ),
+        )
+
     def get_resource(self, api_client: kubernetes.client.ApiClient, cache=True):
         """Get the CertificateSigningRequest object from the kubernetes cluster based on 
         the self.name. If cache is set to True, then cache the result and fetch from
@@ -47,8 +49,10 @@ class CSRResource:
                 raise
         self._resource_cache = response
         return response
-    
-    def resource_exists(self, api_client: kubernetes.client.ApiClient, cache=True) -> bool:
+
+    def resource_exists(
+        self, api_client: kubernetes.client.ApiClient, cache=True
+    ) -> bool:
         """Return if the CertificateSigningRequest exists in the cluster"""
         return bool(self.get_resource(api_client, cache))
 
@@ -59,28 +63,32 @@ class CSRResource:
             return api_instance.create_certificate_signing_request(self.get_text())
         else:
             return self.get_resource(api_client)
-    
+
     def approve(
-            self,
-            api_client: kubernetes.client.ApiClient,
-            message: str = "This certificate was approved by the Python Client.",
-            reason: str = "ApprovedForUser"):
+        self,
+        api_client: kubernetes.client.ApiClient,
+        message: str = "This certificate was approved by the Python Client.",
+        reason: str = "ApprovedForUser",
+    ):
         csr_status = self.get_resource(api_client, cache=False)
         # create an approval condition
         approval_condition = kubernetes.client.V1beta1CertificateSigningRequestCondition(
             last_update_time=datetime.now(timezone.utc).astimezone(),
             message=message,
             reason=reason,
-            type='Approved')
+            type="Approved",
+        )
 
         # patch the existing `body` with the new conditions
         # you might want to append the new conditions to the existing ones
         csr_status.status.conditions = [approval_condition]
         api_instance = kubernetes.client.CertificatesV1beta1Api(api_client)
-        response = api_instance.replace_certificate_signing_request_approval(self.name, csr_status)
+        response = api_instance.replace_certificate_signing_request_approval(
+            self.name, csr_status
+        )
         self._resource_cache = response
         return response
-    
+
     def get_cert(self, api_client: kubernetes.client.ApiClient):
         csr_status = self.get_resource(api_client, cache=False)
         return csr_status.status.certificate
