@@ -8,6 +8,8 @@ TODO
 - [x] Automate the approval of the CSR resource
 - [ ] Automate the creation of a kubeconfig 
 - [ ] Automate or document the creation of cluster premissions
+- [ ] Automate the build
+- [ ] Good test coverage
 
 
 
