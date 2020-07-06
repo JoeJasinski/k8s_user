@@ -1,6 +1,15 @@
-# 
+# Kubernetes User Creator
 
-TBD
+The goal of this project is to make it easy to create a kubernetes user.
+
+TODO
+[x] Automate the creation of openssl key and csr
+[x] Automate the creation of a k8s CSR resource
+[x] Automate the approval of the CSR resource
+[ ] Automate the creation of a kubeconfig 
+[ ] Automate or document the creation of cluster premissions
+
+
 
 ```python
 import kubernetes
