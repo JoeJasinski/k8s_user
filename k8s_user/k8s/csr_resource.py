@@ -1,4 +1,5 @@
 from typing import Optional, Dict, List
+import time
 from datetime import datetime, timezone
 import kubernetes
 from kubernetes.client.rest import ApiException
@@ -89,6 +90,13 @@ class CSRResource:
         self._resource_cache = response
         return response
 
-    def get_cert(self, api_client: kubernetes.client.ApiClient):
-        csr_status = self.get_resource(api_client, cache=False)
-        return csr_status.status.certificate
+    def get_cert(self, api_client: kubernetes.client.ApiClient, timeout: int = 10):
+        start = time.time()
+        cert = None
+        while time.time() - start < timeout:
+            csr_status = self.get_resource(api_client, cache=False)
+            cert = csr_status.status.certificate
+            if cert:
+                break
+            time.sleep(1)
+        return cert
