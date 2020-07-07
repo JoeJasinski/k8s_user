@@ -5,7 +5,7 @@ import pytest
 import kubernetes
 from kubernetes.client.rest import ApiException
 from unittest.mock import Mock
-from k8s_user.crypto_key import CSRandKey, CSR, Key
+from k8s_user.pki import CSRandKey, CSR, Key
 from k8s_user.k8s.csr_resource import CSRResource
 
 

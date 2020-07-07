@@ -14,12 +14,25 @@ TODO
 - [ ] Good test coverage
 
 
+Quick Start
+
+```python
+import kubernetes
+from kubernetes import client, config
+api_client = config.new_client_from_config()
+
+from k8s_user import K8sUser
+user = K8sUser(name="joe", key_dir=".")
+user.create(api_client)
+```
+
+Detailed API Interaction
 
 ```python
 import kubernetes
 from kubernetes import client, config
 from k8s_user.k8s.csr_resource import CSRResource
-from k8s_user.crypto_key import CSRandKey
+from k8s_user.pki import CSRandKey, Cert
 
 csr_name = 'joe'
 
@@ -27,8 +40,8 @@ csr_name = 'joe'
 ct = CSRandKey(csr_name, additional_subject={"O": "jazstudios"})
 
 # save the csr and key
-ct.csr.save("joe.csr")
-ct.key.save("joe.key")
+ct.csr.save("joe.csr.pem")
+ct.key.save("joe.key.pem")
 
 # create the k8s api client
 api_client = config.new_client_from_config()
@@ -46,5 +59,8 @@ csr.resource_exists(api_client)
 approved_csr_obj = csr.approve(api_client)
 
 # Get the certificate file
-cert_str = csr.get_cert(api_client)
+crt_str = csr.get_cert(api_client)
+
+ct = Cert(crt_data=base64.b64decode(crt_str))
+ct.save('joe.crt.pem')
 ```

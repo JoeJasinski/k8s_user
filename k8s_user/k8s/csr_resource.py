@@ -51,12 +51,12 @@ class CSRResource:
         return response
 
     def resource_exists(
-        self, api_client: kubernetes.client.ApiClient, cache=True
+        self, api_client: kubernetes.client.ApiClient, cache: Optional[bool] = True
     ) -> bool:
         """Return if the CertificateSigningRequest exists in the cluster"""
         return bool(self.get_resource(api_client, cache))
 
-    def create(self, api_client):
+    def create(self, api_client: kubernetes.client.ApiClient):
         """Create the CertificateSigningRequest in the kubernetes cluster"""
         if not self.resource_exists(api_client):
             api_instance = kubernetes.client.CertificatesV1beta1Api(api_client)

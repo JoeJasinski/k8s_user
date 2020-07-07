@@ -2,7 +2,7 @@ import os
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
-from k8s_user.crypto_key import CSRandKey, CSR, Key
+from k8s_user.pki import CSRandKey, CSR, Key, Cert
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -34,9 +34,7 @@ def test__key__key_size():
 
 
 def test__key__load():
-    k = Key(key_file=os.path.join(
-        FIXTURE_DIR, "01_crypto_key.pem"))
-
+    k = Key(key_file=os.path.join(FIXTURE_DIR, "01_crypto_key.pem"))
     assert (k.key.private_numbers().q ==
             144297355258033432961864249587566476417513395433306785930002598799109052058830086122084681049876654212847918251721493275668666135181801876080277008509389732804065133754794433634493195096633781919315478959132232587747522900893559497688267541882710926783531946921083827536107483831548399710096915589910119439697)
     assert (k.key.private_numbers().p ==
@@ -125,6 +123,43 @@ def test__csr__save(tmp_path):
         "-----BEGIN CERTIFICATE REQUEST-----")
     assert saved_csr.endswith(
         "-----END CERTIFICATE REQUEST-----\n")
+
+
+def test__cert__init__crt_file():
+    ct = Cert(crt_file=os.path.join(FIXTURE_DIR, "03_cert.pem"))
+    assert ct.crt.serial_number == 61276984187087310175771381080539889888
+
+
+def test__cert__init__crt_data():
+    with open(os.path.join(FIXTURE_DIR, "03_cert.pem"), 'rb') as f:
+        ct = Cert(crt_data=f.read())
+    assert ct.crt.serial_number == 61276984187087310175771381080539889888
+
+
+def test__cert__init__subject():
+    ct = Cert(crt_file=os.path.join(FIXTURE_DIR, "03_cert.pem"))
+    assert ct.subject == "CN=john2,O=jazstudios"
+
+
+def test__cert__pem():
+    ct = Cert(crt_file=os.path.join(FIXTURE_DIR, "03_cert.pem"))
+    assert ct.pem.decode("utf-8").startswith(
+        "-----BEGIN CERTIFICATE-----")
+    assert ct.pem.decode("utf-8").endswith(
+        "-----END CERTIFICATE-----\n")
+
+def test__cert__save(tmp_path):
+    ct = Cert(crt_file=os.path.join(FIXTURE_DIR, "03_cert.pem"))
+    save_crt = tmp_path / "cert.pem"
+    save_crt.write_text("")
+    ct.save(path=save_crt)
+
+    with open(save_crt) as f:
+        saved_crt = f.read()
+    assert saved_crt.startswith(
+        "-----BEGIN CERTIFICATE-----")
+    assert saved_crt.endswith(
+        "-----END CERTIFICATE-----\n")
 
 
 def test__csrandkey__init():
