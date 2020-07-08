@@ -58,6 +58,10 @@ class Key:
             )
 
     @property
+    def base64(self):
+        return base64.b64encode(self.pem).decode("utf-8")
+
+    @property
     def pem(self):
         return self.key.private_bytes(
             encoding=serialization.Encoding.PEM,
