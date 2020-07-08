@@ -6,15 +6,17 @@ TODO
 - [x] Automate the creation of openssl key and csr
 - [x] Automate the creation of a k8s CSR resource
 - [x] Automate the approval of the CSR resource
-- [ ] Automate the creation of a kubeconfig 
-- [ ] Automate or document the creation of cluster premissions
-- [ ] Create a command line tool as well as python api
+- [x] Automate the creation of a kubeconfig 
+- [x] Automate or document the creation of cluster premissions
+- [x] Create a command line tool as well as python api
 - [ ] Document well
 - [ ] Automate the build
 - [ ] Good test coverage
 
 
-Quick Start
+## Quick Start
+
+Create and sign the user
 
 ```python
 import kubernetes
@@ -24,9 +26,17 @@ api_client = config.new_client_from_config()
 from k8s_user import K8sUser
 user = K8sUser(name="joe", key_dir=".")
 user.create(api_client)
+user.config(cluster_name="joe", context_name="my-context")
+user.save_config("kubeconfig.yaml")
 ```
 
-Detailed API Interaction
+Add a clusterrollbinding for the new users
+
+```bash
+kubectl create clusterrolebinding joe-admin --clusterrole=admin --user=joe
+```
+
+## Detailed API Interaction
 
 ```python
 import kubernetes
