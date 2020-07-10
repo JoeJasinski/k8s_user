@@ -14,11 +14,14 @@ NAME_ATTRIBUTE_MAPING = {
     "OU": NameOID.ORGANIZATIONAL_UNIT_NAME,
     "CN": NameOID.COMMON_NAME,
     "C": NameOID.COUNTRY_NAME,
-    "S": NameOID.STATE_OR_PROVINCE_NAME,
+    "ST": NameOID.STATE_OR_PROVINCE_NAME,
     "L": NameOID.LOCALITY_NAME,
+    "STREET": NameOID.STREET_ADDRESS,
     "SN": NameOID.SURNAME,
     "GN": NameOID.GIVEN_NAME,
     "T": NameOID.TITLE,
+    "DC": NameOID.DOMAIN_COMPONENT,
+    "UID": NameOID.USER_ID,
 }
 
 
@@ -168,6 +171,8 @@ class CSRandKey:
         key_file_password: Optional[str] = None,
     ):
 
-        self.key = Key(key_size, key_file, key_file_password,)
-
+        self.key = Key(
+            key_size=key_size,
+            key_file=key_file,
+            key_file_password=key_file_password,)
         self.csr = CSR(self.key, common_name, additional_subject, dnsnames,)
