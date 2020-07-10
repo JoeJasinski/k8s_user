@@ -14,7 +14,16 @@ TODO
 - [ ] Good test coverage
 
 
-## Quick Start
+## CLI Quick Start
+
+```bash
+python -m k8s_user mysecretname
+
+python -m k8s_user mysecretname \
+    --kubeconfig ~/.kube/config
+```
+
+## Python Quick Start
 
 Create and sign the user
 
