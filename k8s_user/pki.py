@@ -1,6 +1,7 @@
 from typing import Optional, Dict, List
 from datetime import datetime, timezone
 import base64
+import collections
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -25,6 +26,9 @@ NAME_ATTRIBUTE_MAPING = {
 }
 
 
+KeyBundle = collections.namedtuple("KeyBundle", "user_name user_key user_csr user_cert")
+
+
 class Key:
     def __init__(
         self,
@@ -38,14 +42,12 @@ class Key:
 
     def load_data(self, key_data: bytes, password: Optional[str] = None):
         private_key = serialization.load_pem_private_key(
-            key_data,
-            password=password,
-            backend=default_backend()
+            key_data, password=password, backend=default_backend()
         )
         return private_key
 
     def load_file(self, path: str, password: Optional[str] = None):
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             return self.load_data(f.read(), password=password)
 
     def load(self, key_data=None, key_file=None, password: Optional[str] = None):
@@ -55,9 +57,7 @@ class Key:
             self.key = self.load_file(path=key_file, password=password)
         else:
             self.key = rsa.generate_private_key(
-                public_exponent=65537,
-                key_size=self.key_size,
-                backend=default_backend()
+                public_exponent=65537, key_size=self.key_size, backend=default_backend()
             )
 
     @property
@@ -120,19 +120,16 @@ class CSR:
 
 
 class Cert:
-
     def __init__(
-            self,
-            crt_data: Optional[bytes] = None,
-            crt_file: Optional[str] = None):
+        self, crt_data: Optional[bytes] = None, crt_file: Optional[str] = None
+    ):
         self.load(crt_data, crt_file)
 
     def load_data(self, crt_data: bytes):
-        return x509.load_pem_x509_certificate(
-            crt_data, default_backend())
+        return x509.load_pem_x509_certificate(crt_data, default_backend())
 
     def load_file(self, path: str):
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             return self.load_data(f.read())
 
     def load(self, crt_data=None, crt_file=None):
@@ -172,7 +169,6 @@ class CSRandKey:
     ):
 
         self.key = Key(
-            key_size=key_size,
-            key_file=key_file,
-            key_file_password=key_file_password,)
+            key_size=key_size, key_file=key_file, key_file_password=key_file_password,
+        )
         self.csr = CSR(self.key, common_name, additional_subject, dnsnames,)
