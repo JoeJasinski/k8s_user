@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from datetime import datetime, timezone
 import base64
 import collections
@@ -38,7 +38,14 @@ class Key:
         key_file_password: Optional[str] = None,
     ):
         self.key_size = key_size
-        self.load(key_data, key_file, key_file_password)
+        self.key_data = key_data
+        self.key_file = key_file
+        self.key_file_password = key_file_password
+
+        if self.key_file or self.key_data:
+            self.load()
+        else:
+            self.generate()
 
     def load_data(self, key_data: bytes, password: Optional[str] = None):
         private_key = serialization.load_pem_private_key(
@@ -50,15 +57,20 @@ class Key:
         with open(path, "rb") as f:
             return self.load_data(f.read(), password=password)
 
-    def load(self, key_data=None, key_file=None, password: Optional[str] = None):
-        if key_data:
-            self.key = self.load_data(key_data, password=password)
-        elif key_file:
-            self.key = self.load_file(path=key_file, password=password)
+    def load(self):
+        if self.key_data:
+            self.key = self.load_data(
+                key_data=self.key_data, password=self.key_file_password)
+        elif self.key_file:
+            self.key = self.load_file(
+                path=self.key_file, password=self.key_file_password)
         else:
-            self.key = rsa.generate_private_key(
-                public_exponent=65537, key_size=self.key_size, backend=default_backend()
-            )
+            raise ValueError("Must supply key_data or key_file")
+
+    def generate(self):
+        self.key = rsa.generate_private_key(
+            public_exponent=65537, key_size=self.key_size, backend=default_backend()
+        )
 
     @property
     def base64(self):
@@ -80,26 +92,60 @@ class Key:
 class CSR:
     def __init__(
         self,
-        key,
+        key: Key,
         common_name: str,
         additional_subject: Optional[Dict] = None,
         dnsnames: Optional[Dict] = None,
+        csr_data: Optional[bytes] = None,
+        csr_file: Optional[str] = None,
+        signing_hash_algo: Optional[Any] = None,
     ):
+        self.key = key
+        self.csr_data = csr_data
+        self.csr_file = csr_file
+        self.signing_hash_algo  = (
+            signing_hash_algo if signing_hash_algo else hashes.SHA256)
+
         if not additional_subject:
             additional_subject = {}
-        if not dnsnames:
-            dnsnames = {}
-
-        attribue_list = [x509.NameAttribute(NameOID.COMMON_NAME, common_name)] + [
+        self.attribue_list = [x509.NameAttribute(NameOID.COMMON_NAME, common_name)] + [
             x509.NameAttribute(NAME_ATTRIBUTE_MAPING.get(a, a), v)
             for a, v in additional_subject.items()
         ]
 
+        if not dnsnames:
+            dnsnames = {}
+        self.dnsnames = dnsnames
+
+        if self.csr_file or self.csr_data:
+            self.load()
+        else:
+            self.generate()
+
+    def load_data(self, csr_data: bytes):
+        csr = x509.load_pem_x509_csr(
+            csr_data, backend=default_backend()
+        )
+        return csr
+
+    def load_file(self, path: str):
+        with open(path, "rb") as f:
+            return self.load_data(f.read())
+
+    def load(self):
+        if self.csr_data:
+            self.csr = self.load_data(csr_data=self.csr_data)
+        elif self.csr_file:
+            self.csr = self.load_file(path=self.csr_file)
+        else:
+            raise ValueError("Must supply csr_data or csr_file")
+
+    def generate(self):
         self.csr = (
             x509.CertificateSigningRequestBuilder()
-            .subject_name(x509.Name(attribue_list))
-            .add_extension(x509.SubjectAlternativeName(dnsnames), critical=False,)
-            .sign(key.key, hashes.SHA256(), default_backend())
+            .subject_name(x509.Name(self.attribue_list))
+            .add_extension(x509.SubjectAlternativeName(self.dnsnames), critical=False,)
+            .sign(self.key.key, self.signing_hash_algo(), default_backend())
         )
 
     @property
@@ -166,9 +212,18 @@ class CSRandKey:
         key_size: int = 4092,
         key_file: Optional[str] = None,
         key_file_password: Optional[str] = None,
+        csr_file: Optional[str] = None,
     ):
 
         self.key = Key(
-            key_size=key_size, key_file=key_file, key_file_password=key_file_password,
+            key_size=key_size,
+            key_file=key_file,
+            key_file_password=key_file_password,
         )
-        self.csr = CSR(self.key, common_name, additional_subject, dnsnames,)
+        self.csr = CSR(
+            key=self.key,
+            common_name=common_name,
+            additional_subject=additional_subject,
+            dnsnames=dnsnames,
+            csr_file=csr_file,
+        )

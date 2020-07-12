@@ -16,6 +16,7 @@ class K8sUser:
         key_dir=None,
         in_key=None,
         in_key_password=None,
+        in_csr=None,
         metadata=None,
         kubeconfig_klass=None,
     ):
@@ -23,6 +24,7 @@ class K8sUser:
         self.key_dir = os.path.abspath(key_dir or ".")
         self.in_key = in_key
         self.in_key_password = in_key_password
+        self.in_csr = in_csr
         self.metadata = metadata if metadata else {}
         if kubeconfig_klass:
             self.kubeconfig_klass = kubeconfig_klass
@@ -34,13 +36,14 @@ class K8sUser:
             common_name=self.name,
             key_file=self.in_key,
             key_file_password=self.in_key_password,
+            csr_file=self.in_csr,
         )
         key_path = os.path.join(self.key_dir, f"{self.name}.key.pem")
         if self.key_dir and not self.in_key:
             if os.path.exists(key_path):
                 raise Exception(f"Key already exists at {key_path}")
             self.candk.key.save(key_path)
-        if self.key_dir:
+        if self.key_dir and not self.in_csr:
             csr_path = os.path.join(self.key_dir, f"{self.name}.csr.pem")
             self.candk.csr.save(csr_path)
 

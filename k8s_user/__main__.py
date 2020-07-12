@@ -9,42 +9,88 @@ def main(args=None):
 
     parser = argparse.ArgumentParser(description="Create K8S User", epilog="")
 
-    parser.add_argument("name", nargs="?")
+    parser.add_argument(
+        "name",
+        nargs="?",
+        help=(
+            "The name of the new user to create, as well as the name "
+            "of the k8s CSR resource that will be attached to this user."
+            )
+        )
     parser.add_argument(
         "-d",
         "--out-dir",
         dest="out_directory",
-        help="output directory for key files",
+        help=(
+            "If passed, the newly created public key, CSR, and cert files "
+            "will be saved to this location in PEM format. This is in case "
+            "you want to have these creds available in PEM format in "
+            "addition to having the creds embeded in the kubeconfig file."
+        ),
         default=None,
+    )
+    parser.add_argument(
+        "-k", "--out-kubeconfig",
+        dest="out_kubeconfig",
+        help=(
+            "Output kubeconfig file path. A new kubeconfig "
+            "file will be generated at this location with "
+            "the credentials needed to login as the specified user."
+        )
     )
     parser.add_argument(
         "--out-kubeconfig-context-name",
         dest="out_context",
-        help="output kubernetes context name",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig context that will be associated with the user."
+        ),
         default="default",
     )
     parser.add_argument(
         "--out-kubeconfig-cluster-name",
         dest="out_cluster",
-        help="output kubernetes cluster name",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig cluster that will be associated with the user"
+        ),
         default="default",
     )
     parser.add_argument(
-        "-k", "--out-kubeconfig", dest="out_kubeconfig", help="output kubeconfig file"
-    )
-    parser.add_argument(
-        "--kubeconfig", dest="in_kubeconfig", help="input kubeconfig file", default=None,
+        "--kubeconfig",
+        dest="in_kubeconfig",
+        help=(
+            "This is the name of the kubeconfig that will be used to create "
+            "the new user. This kubeconfig requires permissions to create, view, "
+            "and approve k8s CSR resources. If not specified, the default kubconfig "
+            "will be used."
+        ) ,
+        default=None,
     )
     parser.add_argument(
         "--in-key",
         dest="in_key",
-        help="input rsa key pem file (load instead of generate)",
+        help=(
+            "Optionally pass in a filesystem path to an existing RSA key in PEM "
+            "format instead of generating a new key."
+        ),
         default=None,
     )
     parser.add_argument(
         "--in-key-password",
         dest="in_key_password",
-        help="input rsa key pem file password (requires --in-key)",
+        help=(
+            "If --in-key is passed, and if that key has a password set, "
+            "this is the password to decrypt that key."
+        ),
+        default=None,
+    )
+    parser.add_argument(
+        "--in-csr",
+        dest="in_csr",
+        help=("Optonally pass in a filesystem path to an existing CSR file in PEM "
+              "format. This requires the --in-key argument and requires that "
+              "the CSR belongs to the KEY (the moduluses match)."),
         default=None,
     )
 
@@ -76,6 +122,7 @@ def main(args=None):
             key_dir=out_directory,
             in_key=args.in_key,
             in_key_password=args.in_key_password,
+            in_csr=args.in_csr,
         )
 
         user.create(api_client)
