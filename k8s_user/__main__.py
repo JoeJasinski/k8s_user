@@ -119,14 +119,19 @@ def main(args=None):
     try:
         user = K8sUser(
             name=args.name,
-            key_dir=out_directory,
+        )
+
+        inputs = dict(
+            cluster_name=args.out_cluster,
+            context_name=args.out_context,
+            creds_dir=out_directory,
             in_key=args.in_key,
             in_key_password=args.in_key_password,
             in_csr=args.in_csr,
         )
-
-        user.create(api_client)
-        user.make_kubeconfig(cluster_name=args.out_cluster, context_name=args.out_context)
+        user.create(
+            api_client,
+            inputs)
 
         user.kubeconfig.save(out_kubeconfig)
     except Exception as e:
