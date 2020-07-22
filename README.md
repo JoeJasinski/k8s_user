@@ -9,6 +9,7 @@ TODO
 - [x] Automate the creation of a kubeconfig 
 - [x] Automate or document the creation of cluster premissions
 - [x] Create a command line tool as well as python api
+- [ ] Automate the SA Token workflow
 - [ ] Document well
 - [ ] Automate the build
 - [ ] Good test coverage

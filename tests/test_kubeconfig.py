@@ -4,8 +4,8 @@ import pytest
 import kubernetes
 from k8s_user.pki import KeyBundle
 from k8s_user.kubeconfig import (
-    KubeConfig, GenericConfigGen,
-    ClusterConfigGen, UserConfigGen, KubeConfig)
+    GenericConfigGen, ClusterConfigGen,
+    CSRUserConfigGen, CSRKubeConfig)
 
 
 FIXTURE_DIR = os.path.join(
@@ -69,7 +69,7 @@ def test__ClusterConfigGen(tmp_path):
                       'name': 'my_cluster'}]}
 
 
-def test__UserConfigGen(tmp_path):
+def test__CSRUserConfigGen(tmp_path):
 
     save_cert = tmp_path / "cert.pem"
     save_cert.write_text("hi")
@@ -87,7 +87,7 @@ def test__UserConfigGen(tmp_path):
 
     mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient)
     mock_api_client.configuration = DummyConfiguration()
-    ccg = UserConfigGen(mock_api_client, dummy_keybundle)
+    ccg = CSRUserConfigGen(mock_api_client, dummy_keybundle)
     assert ccg.to_dict() == {
         'users': [{'name': 'myname',
                    'user': {'client-certificate-data': 'mycrt',
@@ -117,7 +117,7 @@ def test__multi__ConfigGen(tmp_path):
     mock_api_client.configuration = DummyConfiguration()
 
     assert (ClusterConfigGen(mock_api_client, "my_cluster") |
-            UserConfigGen(mock_api_client, dummy_keybundle) |
+            CSRUserConfigGen(mock_api_client, dummy_keybundle) |
             GenericConfigGen(
                 {"apiVersion": "v1",
                 "kind": "Config", "preferences": {}}, {})
@@ -153,7 +153,7 @@ def test__KubeConfig(tmp_path):
     mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient)
     mock_api_client.configuration = DummyConfiguration()
 
-    kc = KubeConfig(
+    kc = CSRKubeConfig(
         mock_api_client,
         "mycontext",
         "mycluster",

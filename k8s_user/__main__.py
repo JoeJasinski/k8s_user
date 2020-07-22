@@ -3,7 +3,7 @@ import sys
 import argparse
 import kubernetes
 from kubernetes import client, config
-from .user import K8sUser
+from .user import CSRK8sUser
 
 def main(args=None):
 
@@ -117,7 +117,7 @@ def main(args=None):
     api_client = config.new_client_from_config(config_file=args.in_kubeconfig)
 
     try:
-        user = K8sUser(
+        user = CSRK8sUser(
             name=args.name,
         )
 
@@ -128,12 +128,9 @@ def main(args=None):
             in_key=args.in_key,
             in_key_password=args.in_key_password,
             in_csr=args.in_csr,
+            out_kubeconfig=out_kubeconfig,
         )
-        user.create(
-            api_client,
-            inputs)
-
-        user.kubeconfig.save(out_kubeconfig)
+        user.create(api_client, inputs)
     except Exception as e:
         raise
         print(f"{e}")

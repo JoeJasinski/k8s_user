@@ -20,7 +20,7 @@ setup(
         "pyyaml",
     ],
     extras_require={
-        "test":  ["pytest", "black"],
+        "test":  ["pytest", "pytest-cov", "black", "coverage"],
     },
     entry_points={
         "console_scripts": [

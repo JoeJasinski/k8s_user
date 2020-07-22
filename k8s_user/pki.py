@@ -37,6 +37,7 @@ class Key:
         key_file: Optional[str] = None,
         key_file_password: Optional[str] = None,
     ):
+        self.created = False
         self.key_size = key_size
         self.key_data = key_data
         self.key_file = key_file
@@ -46,6 +47,7 @@ class Key:
             self.load()
         else:
             self.generate()
+            self.created = True
 
     def load_data(self, key_data: bytes, password: Optional[str] = None):
         private_key = serialization.load_pem_private_key(
@@ -100,6 +102,7 @@ class CSR:
         csr_file: Optional[str] = None,
         signing_hash_algo: Optional[Any] = None,
     ):
+        self.created = False
         self.key = key
         self.csr_data = csr_data
         self.csr_file = csr_file
@@ -121,6 +124,7 @@ class CSR:
             self.load()
         else:
             self.generate()
+            self.created = True
 
     def load_data(self, csr_data: bytes):
         csr = x509.load_pem_x509_csr(
