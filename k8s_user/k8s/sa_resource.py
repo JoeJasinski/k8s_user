@@ -73,7 +73,7 @@ class SAResource:
             sa = self.get_resource(api_client, cache=False)
             try:
                 token = [s for s in sa.secrets if 'token' in s.name][0].name
-            except (IndexError, AttributeError):
+            except (IndexError, AttributeError, TypeError):
                 token = None
             if token:
                 break

@@ -97,7 +97,7 @@ class TokenUserConfigGen:
     def __init__(
             self,
             api_client: kubernetes.client.ApiClient,
-            keybundle,
+            tokenbundle,
             **kwargs):
         self.api_client = api_client
         self.tokenbundle = tokenbundle
@@ -106,9 +106,9 @@ class TokenUserConfigGen:
         return {
             "users": [
                 {
-                    "name": self.keybundle.user_name,
+                    "name": self.tokenbundle.user_name,
                     "user": {
-                        "token": self.keybundle.user_token,
+                        "token": self.tokenbundle.user_token,
                     },
                 },
             ]
@@ -198,7 +198,7 @@ class TokenKubeConfig(KubeConfigBase):
 
     _config_gen_klasses = {
         "cluster": ClusterConfigGen,
-        "user": CSRUserConfigGen,
+        "user": TokenUserConfigGen,
         "generic": GenericConfigGen,
     }
 
