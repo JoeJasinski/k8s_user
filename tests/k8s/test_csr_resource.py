@@ -11,7 +11,7 @@ from k8s_user.k8s.csr_resource import CSRResource
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'fixtures',
+    "..", 'fixtures',
     )
 
 

@@ -3,32 +3,16 @@ import sys
 import argparse
 import kubernetes
 from kubernetes import client, config
-from .user import K8sUser
+from .user import CSRK8sUser, TokenK8sUser
 
 def main(args=None):
 
-    parser = argparse.ArgumentParser(description="Create K8S User", epilog="")
+    parser = argparse.ArgumentParser(
+        prog="k8s_user", description="Create K8S User", epilog="")
 
-    parser.add_argument(
-        "name",
-        nargs="?",
-        help=(
-            "The name of the new user to create, as well as the name "
-            "of the k8s CSR resource that will be attached to this user."
-            )
-        )
-    parser.add_argument(
-        "-d",
-        "--out-dir",
-        dest="out_directory",
-        help=(
-            "If passed, the newly created public key, CSR, and cert files "
-            "will be saved to this location in PEM format. This is in case "
-            "you want to have these creds available in PEM format in "
-            "addition to having the creds embeded in the kubeconfig file."
-        ),
-        default=None,
-    )
+    subparsers = parser.add_subparsers(help='', dest="user_type")
+
+
     parser.add_argument(
         "-k", "--out-kubeconfig",
         dest="out_kubeconfig",
@@ -68,6 +52,28 @@ def main(args=None):
         default=None,
     )
     parser.add_argument(
+        "-d",
+        "--out-dir",
+        dest="out_directory",
+        help=(
+            "If passed, the newly created public key, CSR, and cert files "
+            "will be saved to this location in PEM format. This is in case "
+            "you want to have these creds available in PEM format in "
+            "addition to having the creds embeded in the kubeconfig file."
+        ),
+        default=None,
+    )
+    parser_csr = subparsers.add_parser('csr', help='CSR User Generator')
+    parser_csr.add_argument(
+        "name",
+        nargs="?",
+        help=(
+            "The name of the new user to create, as well as the name "
+            "of the k8s resource that will be attached to this user."
+            )
+        )
+
+    parser_csr.add_argument(
         "--in-key",
         dest="in_key",
         help=(
@@ -76,7 +82,7 @@ def main(args=None):
         ),
         default=None,
     )
-    parser.add_argument(
+    parser_csr.add_argument(
         "--in-key-password",
         dest="in_key_password",
         help=(
@@ -85,7 +91,7 @@ def main(args=None):
         ),
         default=None,
     )
-    parser.add_argument(
+    parser_csr.add_argument(
         "--in-csr",
         dest="in_csr",
         help=("Optonally pass in a filesystem path to an existing CSR file in PEM "
@@ -94,8 +100,27 @@ def main(args=None):
         default=None,
     )
 
+    parser_token = subparsers.add_parser('token', help='Token User Generator')
+    parser_token.add_argument(
+        "name",
+        nargs="?",
+        help=(
+            "The name of the new user to create, as well as the name "
+            "of the Service Account resource that will be attached to this user."
+            )
+        )
+    parser_token.add_argument(
+        "namespace",
+        nargs="?",
+        default='default',
+        help=(
+            "The namespace of the service account associated with the user."
+            )
+        )
+
     args = parser.parse_args()
     print(args)
+    #sys.exit(1)
 
     if not args.name:
         print("Name argument must be specified")
@@ -117,18 +142,30 @@ def main(args=None):
     api_client = config.new_client_from_config(config_file=args.in_kubeconfig)
 
     try:
-        user = K8sUser(
-            name=args.name,
-            key_dir=out_directory,
-            in_key=args.in_key,
-            in_key_password=args.in_key_password,
-            in_csr=args.in_csr,
+        inputs_common = dict(
+            cluster_name=args.out_cluster,
+            context_name=args.out_context,
+            out_kubeconfig=out_kubeconfig,
         )
+        if args.user_type == "csr":
+            user = CSRK8sUser(
+                name=args.name,
+            )
 
-        user.create(api_client)
-        user.make_kubeconfig(cluster_name=args.out_cluster, context_name=args.out_context)
-
-        user.kubeconfig.save(out_kubeconfig)
+            inputs = {**dict(
+                creds_dir=out_directory,
+                in_key=args.in_key,
+                in_key_password=args.in_key_password,
+                in_csr=args.in_csr,
+            ), **inputs_common}
+        else:
+            user = TokenK8sUser(
+                name=args.name,
+            )
+            inputs = {**dict(
+                namespace=args.namespace,
+             ), **inputs_common}
+        user.create(api_client, inputs)
     except Exception as e:
         raise
         print(f"{e}")
