@@ -97,7 +97,7 @@ class SAResource:
 
     def get_token(self, api_client: kubernetes.client.ApiClient, timeout: int = 10):
         start = time.time()
-        cert = None
+        token = None
         while time.time() - start < timeout:
             secret = self.get_token_secret_resource(api_client, cache=False)
             try:

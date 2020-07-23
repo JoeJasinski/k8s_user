@@ -5,7 +5,8 @@ import kubernetes
 from k8s_user.pki import KeyBundle
 from k8s_user.kubeconfig import (
     GenericConfigGen, ClusterConfigGen,
-    CSRUserConfigGen, CSRKubeConfig)
+    CSRUserConfigGen, CSRKubeConfig, TokenKubeConfig)
+from k8s_user.workflows.sa_workflow import TokenBundle
 
 
 FIXTURE_DIR = os.path.join(
@@ -134,7 +135,7 @@ def test__multi__ConfigGen(tmp_path):
             }
 
 
-def test__KubeConfig(tmp_path):
+def test__CSRKubeConfig(tmp_path):
 
     save_cert = tmp_path / "cert.pem"
     save_cert.write_text("hi")
@@ -174,4 +175,44 @@ def test__KubeConfig(tmp_path):
         'users': [{'name': 'myname',
                    'user': {'client-certificate-data': 'mycrt',
                             'client-key-data': 'mykey'}}],
+        }
+
+
+def test__TokenKubeConfig(tmp_path):
+
+    save_cert = tmp_path / "cert.pem"
+    save_cert.write_text("hi")
+
+    dummy_tokenbundle = TokenBundle(
+            user_name="myname",
+            user_token="mytoken",
+        )
+
+    class DummyConfiguration:
+        host = "localhost"
+        ssl_ca_cert = save_cert
+
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient)
+    mock_api_client.configuration = DummyConfiguration()
+
+    kc = TokenKubeConfig(
+        mock_api_client,
+        "mycontext",
+        "mycluster",
+        dummy_tokenbundle,
+    )
+
+    assert kc.generate() == {
+        'apiVersion': 'v1',
+        'clusters': [{'cluster': {'certificate-authority-data': 'aGk=',
+                                  'server': 'localhost'},
+                      'name': 'mycontext'}],
+        'contexts': [{'context': {'cluster': 'mycontext',
+                                  'user': 'myname'},
+                      'name': 'mycluster'}],
+        'current-context': 'mycluster',
+        'kind': 'Config',
+        'preferences': {},
+        'users': [{'name': 'myname',
+                   'user': {'token': 'mytoken'}}],
         }
