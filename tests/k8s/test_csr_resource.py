@@ -4,7 +4,6 @@ import json
 import pytest
 import kubernetes
 from kubernetes.client.rest import ApiException
-from unittest.mock import Mock
 from k8s_user.pki import CSRandKey, CSR, Key
 from k8s_user.k8s.csr_resource import CSRResource
 
@@ -37,7 +36,7 @@ def test__csrresource__get_resource(mock_CertificatesV1beta1Api):
     mock_read_csr.return_value = mock_response
     mock_CertificatesV1beta1Api.return_value.read_certificate_signing_request_status = mock_read_csr
 
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -56,7 +55,7 @@ def test__csrresource__get_resource__404(mock_CertificatesV1beta1Api):
     mock_read_csr.side_effect = ApiException(status = 404)
     mock_CertificatesV1beta1Api.return_value.read_certificate_signing_request_status = mock_read_csr
 
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -72,7 +71,7 @@ def test__csrresource__get_resource__404(mock_CertificatesV1beta1Api):
 ])
 def test__csrresource__resource_exists(resource, expected):
     name = "joe"
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -91,7 +90,7 @@ def test__csrresource__create__new(mock_CertificatesV1beta1Api):
     mock_CertificatesV1beta1Api.return_value.create_certificate_signing_request = mock_create_csr
 
     name = "joe"
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -109,7 +108,7 @@ def test__csrresource__create__existing(mock_CertificatesV1beta1Api):
     mock_response = {'dummy': "response"}
 
     name = "joe"
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -138,7 +137,7 @@ def test__csrresource__approve(mock_CertificatesV1beta1Api):
     mock_CertificatesV1beta1Api.return_value.replace_certificate_signing_request_approval = mock_approve_csr
 
     name = "joe"
-    mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+    mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
     cak = CSRandKey(common_name=name)
     csrr = CSRResource(
         name=name,
@@ -162,7 +161,7 @@ def test__csrresource__approve(mock_CertificatesV1beta1Api):
 #     mock_response = DummyResponse()
 
 #     name = "joe"
-#     mock_api_client = Mock(spec=kubernetes.client.ApiClient) 
+#     mock_api_client = mock.Mock(spec=kubernetes.client.ApiClient) 
 #     cak = CSRandKey(common_name=name)
 #     csrr = CSRResource(
 #         name=name,

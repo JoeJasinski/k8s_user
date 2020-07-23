@@ -24,5 +24,5 @@ clean: build
 	docker run \
 		-v `pwd`:/srv/ \
 		-it k8s_user:${VERSION} \
-		bash -c "rm -rf .coverage reports/coverage/ .pytest_cache/ \
+		bash -c "rm -rf .coverage reports/ .pytest_cache/ \
 			&& find . -name '*.pyc' -exec rm -f {} \;"
