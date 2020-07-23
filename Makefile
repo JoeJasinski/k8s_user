@@ -21,6 +21,7 @@ shell: build
 
 
 clean: build
+	rm -rf dist/ build kubernetes_user.egg-info/
 	docker run \
 		-v `pwd`:/srv/ \
 		-it k8s_user:${VERSION} \
