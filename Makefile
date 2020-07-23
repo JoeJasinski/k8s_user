@@ -1,4 +1,4 @@
-VERSION ?= "1.0.0"
+VERSION ?= "0.0.1"
 
 build:
 	docker build -t k8s_user:${VERSION} . 
@@ -26,3 +26,6 @@ clean: build
 		-it k8s_user:${VERSION} \
 		bash -c "rm -rf .coverage reports/ .pytest_cache/ \
 			&& find . -name '*.pyc' -exec rm -f {} \;"
+
+package:
+	python setup.py sdist bdist_wheel
