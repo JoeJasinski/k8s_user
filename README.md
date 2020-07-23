@@ -1,6 +1,19 @@
 # Kubernetes User Creator
 
-The goal of this project is to make it easy to create a kubernetes user.
+The goal of this project is to make it easy to create a Kubernetes user. While the k8s
+documentation is quick to point out that users do not exist in Kubernetes, sometimes
+you just want to generate a kubeconfig which has access to the cluster.
+
+This access can be achived by the following means:
+
+- create a Service Account with a token with access to the cluster
+- create a RSA certificate/key pair allowing access to the cluster
+
+The "user" is not given any permissions be default, so you still need to create/associate
+the user with ClusterRoleBindings/RoleBindgins.
+
+This project is inspired by the following blog post:
+https://www.openlogic.com/blog/granting-user-access-your-kubernetes-cluster
 
 TODO
 - [x] Automate the creation of openssl key and csr
@@ -9,22 +22,75 @@ TODO
 - [x] Automate the creation of a kubeconfig 
 - [x] Automate or document the creation of cluster premissions
 - [x] Create a command line tool as well as python api
-- [ ] Automate the SA Token workflow
+- [X] Automate the SA Token workflow
+- [ ] Allow passing in SA and CSR resource metadata to CLI
 - [ ] Document well
 - [ ] Automate the build
-- [ ] Good test coverage
+- [ ] 95% test coverage
 
+
+## Install
+
+```bash
+pip install -e .
+```
 
 ## CLI Quick Start
 
-```bash
-python -m k8s_user mysecretname
+### Generate a CSR-based User
 
-python -m k8s_user mysecretname \
+```bash
+
+# basic usage
+
+k8s_user csr myusername
+
+# or providing a non-default kubeconfig
+
+python -m k8s_user csr myusername \
+    --kubeconfig ~/.kube/config
+
+# or without installing
+
+python -m k8s_user csr myusername
+
+# or without installing and providing a non-default kubeconfig
+
+python -m k8s_user csr myusername \
     --kubeconfig ~/.kube/config
 ```
 
-## Python Quick Start
+### Generate a SA-based User with token
+
+```bash
+
+# basic usage
+
+k8s_user sa myusername
+
+# or providing a non-default kubeconfig
+
+k8s_user sa myusername \
+    --kubeconfig ~/.kube/config
+
+# or without installing
+
+python -m k8s_user sa myusername
+
+# or without installing and providing a non-default kubeconfig
+
+python -m k8s_user sa myusername \
+    --kubeconfig ~/.kube/config
+```
+
+Add a clusterrollbinding for the new user
+
+```bash
+kubectl create clusterrolebinding joe-admin --clusterrole=admin --user=joe
+```
+
+
+## Python API Quick Start
 
 Create and sign the user
 
@@ -33,20 +99,25 @@ import kubernetes
 from kubernetes import client, config
 api_client = config.new_client_from_config()
 
-from k8s_user import K8sUser
-user = K8sUser(name="joe", key_dir=".")
-user.create(api_client)
-user.config(cluster_name="joe", context_name="my-context")
-user.save_config("kubeconfig.yaml")
+from k8s_user import CSRK8sUser
+user = CSRK8sUser(name="joe")
+inputs = {
+    "cluster_name": "default",
+    "context_name": "default",
+    "out_kubeconfig": "new-kubeconfig.yaml",
+    "creds_dir": ".",
+}
+user.create(api_client, inputs)
+
 ```
 
-Add a clusterrollbinding for the new users
+Add a clusterrollbinding for the new user
 
 ```bash
 kubectl create clusterrolebinding joe-admin --clusterrole=admin --user=joe
 ```
 
-## Detailed API Interaction
+## Low-Level CSR API Interaction
 
 ```python
 import kubernetes
@@ -57,11 +128,11 @@ from k8s_user.pki import CSRandKey, Cert
 csr_name = 'joe'
 
 # create a KEY and CSR
-ct = CSRandKey(csr_name, additional_subject={"O": "jazstudios"})
+candk = CSRandKey(csr_name, additional_subject={"O": "jazstudios"})
 
 # save the csr and key
-ct.csr.save("joe.csr.pem")
-ct.key.save("joe.key.pem")
+candk.csr.save("joe.csr.pem")
+candk.key.save("joe.key.pem")
 
 # create the k8s api client
 api_client = config.new_client_from_config()
@@ -81,6 +152,6 @@ approved_csr_obj = csr.approve(api_client)
 # Get the certificate file
 crt_str = csr.get_cert(api_client)
 
-ct = Cert(crt_data=base64.b64decode(crt_str))
-ct.save('joe.crt.pem')
+candk = Cert(crt_data=base64.b64decode(crt_str))
+candk.save('joe.crt.pem')
 ```

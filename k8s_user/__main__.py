@@ -100,7 +100,7 @@ def main(args=None):
         default=None,
     )
 
-    parser_token = subparsers.add_parser('token', help='Token User Generator')
+    parser_token = subparsers.add_parser('sa', help='SA Token User Generator')
     parser_token.add_argument(
         "name",
         nargs="?",
@@ -120,7 +120,12 @@ def main(args=None):
 
     args = parser.parse_args()
     print(args)
+
     #sys.exit(1)
+
+    if not args.user_type:
+        print("user_type argument must be specified")
+        sys.exit(1)
 
     if not args.name:
         print("Name argument must be specified")
@@ -158,13 +163,15 @@ def main(args=None):
                 in_key_password=args.in_key_password,
                 in_csr=args.in_csr,
             ), **inputs_common}
-        else:
+        elif args.user_type == "sa":
             user = TokenK8sUser(
                 name=args.name,
             )
             inputs = {**dict(
                 namespace=args.namespace,
              ), **inputs_common}
+        else:
+            raise Exception("Must include a user_type as argument")
         user.create(api_client, inputs)
     except Exception as e:
         raise
