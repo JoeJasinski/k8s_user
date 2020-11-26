@@ -6,6 +6,14 @@ from kubernetes.client.rest import ApiException
 
 
 class CSRResource:
+    """Class for managing the CertificateSigningRequest Kubernetes resource.
+    
+    :param name: the name of the CSR k8s resource
+    :param csr_string: a base64 encoded CSR string
+    :param metadata: an optional dict with fields matching k8s V1ObjectMeta object
+    :param groups: RBAC groups to add to this CSR (defaults to ["system:authenticated"])
+    :param usages: CSR usages (defaults to ["client auth"])
+    """
     def __init__(
         self,
         name: str,
@@ -91,6 +99,7 @@ class CSRResource:
         return response
 
     def get_cert(self, api_client: kubernetes.client.ApiClient, timeout: int = 10):
+        """Get the certificate from the CSR object"""
         start = time.time()
         cert = None
         while time.time() - start < timeout:
