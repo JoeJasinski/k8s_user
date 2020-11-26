@@ -32,7 +32,7 @@ TODO
 ## Install
 
 ```bash
-pip install -e .
+pip install kubernetes-user
 ```
 
 ## CLI Quick Start
@@ -119,6 +119,9 @@ kubectl create clusterrolebinding joe-admin --clusterrole=admin --user=joe
 
 ## Low-Level CSR API Interaction
 
+This example assumes you are connected to a Kubernetes cluster with a kubeconfig in
+the default location.
+
 ```python
 import kubernetes
 from kubernetes import client, config
@@ -134,8 +137,15 @@ candk = CSRandKey(csr_name, additional_subject={"O": "jazstudios"})
 candk.csr.save("joe.csr.pem")
 candk.key.save("joe.key.pem")
 
-# create the k8s api client
+# create the k8s api client. Load the kubeconfig from the default location (~/.kube/config)
 api_client = config.new_client_from_config()
+
+# Define the CertificateSigningRequest Kubernetes Resource
+csr = CSRResource(
+    name=csr_name,  # the name of the CertificateSigningRequest k8s object
+    csr_str=candk.csr.base64,  # the base64 encoded csr string
+    metadata={"labels": {"foo": "bar"}},  # optional dict with fields matching k8s V1ObjectMeta object
+)
 
 # Check if the k8s CSR resource exists
 csr.resource_exists(api_client)
@@ -152,6 +162,7 @@ approved_csr_obj = csr.approve(api_client)
 # Get the certificate file
 crt_str = csr.get_cert(api_client)
 
+# Save the certificate to a file
 candk = Cert(crt_data=base64.b64decode(crt_str))
 candk.save('joe.crt.pem')
 ```
