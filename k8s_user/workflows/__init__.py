@@ -3,17 +3,16 @@ import abc
 from typing import Dict
 import collections
 
-StepReturn = collections.namedtuple(
-    "StepReturn", "next_step message"
-)
+StepReturn = collections.namedtuple("StepReturn", "next_step message")
+
 
 class BaseStep(abc.ABC):
 
     name = "base"
 
     def __init__(self, inputs: Dict):
-        self.user = inputs.get('user')
-        self.api_client = inputs.get('api_client')
+        self.user = inputs.get("user")
+        self.api_client = inputs.get("api_client")
 
     @abc.abstractmethod
     def run(self):
@@ -28,7 +27,7 @@ class BaseStep(abc.ABC):
 
 class EndStep(BaseStep):
 
-    name="end"
+    name = "end"
 
     def run(self) -> StepReturn:
         return StepReturn(next_step=None, message="")
@@ -48,6 +47,6 @@ class WorkflowBase(abc.ABC):
         return None
 
     def start(self):
-        step = StepReturn(self.start_step, '')
+        step = StepReturn(self.start_step, "")
         while step.next_step:
             step = self.step_instances[step.next_step]._run()

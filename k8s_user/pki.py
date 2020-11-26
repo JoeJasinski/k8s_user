@@ -35,9 +35,10 @@ class Key:
     This can be used to generate a Key or it can be used to load
     and act upon an existing Key.
     """
+
     def __init__(
         self,
-        key_size: int = 4092,
+        key_size: Optional[int] = 4092,
         key_data: Optional[bytes] = None,
         key_file: Optional[str] = None,
         key_file_password: Optional[str] = None,
@@ -63,7 +64,7 @@ class Key:
             self.generate()
             self.created = True
 
-    def load_data(self, key_data: bytes, password: Optional[str] = None):
+    def load_data(self, key_data: bytes, password: Optional[str] = None) -> Any:
         """Load a Key from a PEM-formatted byte string
         
         :param key_data: a byte string of Key data in PEM format
@@ -74,7 +75,7 @@ class Key:
         )
         return private_key
 
-    def load_file(self, path: str, password: Optional[str] = None):
+    def load_file(self, path: str, password: Optional[str] = None) -> Any:
         """Load a Key from a PEM file
         
         :param path: a filesystem path to a PEM Key file
@@ -88,10 +89,12 @@ class Key:
         """Loads a Key object based on key_data or key_file attribute"""
         if self.key_data:
             self.key = self.load_data(
-                key_data=self.key_data, password=self.key_file_password)
+                key_data=self.key_data, password=self.key_file_password
+            )
         elif self.key_file:
             self.key = self.load_file(
-                path=self.key_file, password=self.key_file_password)
+                path=self.key_file, password=self.key_file_password
+            )
         else:
             raise ValueError("Must supply key_data or key_file")
 
@@ -102,12 +105,12 @@ class Key:
         )
 
     @property
-    def base64(self):
+    def base64(self) -> str:
         """Return a base64-encoded representation of this Key."""
         return base64.b64encode(self.pem).decode("utf-8")
 
     @property
-    def pem(self):
+    def pem(self) -> str:
         """Return a PEM representation of this Key."""
         return self.key.private_bytes(
             encoding=serialization.Encoding.PEM,
@@ -127,6 +130,7 @@ class CSR:
     This can be used to generate a CSR or it can be used to load
     and act upon an existing CSR.
     """
+
     def __init__(
         self,
         key: Key,
@@ -159,8 +163,9 @@ class CSR:
         self.key = key
         self.csr_data = csr_data
         self.csr_file = csr_file
-        self.signing_hash_algo  = (
-            signing_hash_algo if signing_hash_algo else hashes.SHA256)
+        self.signing_hash_algo = (
+            signing_hash_algo if signing_hash_algo else hashes.SHA256
+        )
 
         if not additional_subject:
             additional_subject = {}
@@ -179,18 +184,16 @@ class CSR:
             self.generate()
             self.created = True
 
-    def load_data(self, csr_data: bytes):
+    def load_data(self, csr_data: bytes) -> Any:
         """Load a CSR from a PEM-formatted byte string
         
         :param csr_data: a byte string of CSR data in PEM format
         :returns: a csr object
         """
-        csr = x509.load_pem_x509_csr(
-            csr_data, backend=default_backend()
-        )
+        csr = x509.load_pem_x509_csr(csr_data, backend=default_backend())
         return csr
 
-    def load_file(self, path: str):
+    def load_file(self, path: str) -> Any:
         """Load a CSR from a PEM file
         
         :param path: a filesystem path to a PEM CSR file
@@ -218,17 +221,17 @@ class CSR:
         )
 
     @property
-    def subject(self):
+    def subject(self) -> str:
         """Return a subject string based on this object's attributes"""
         return self.csr.subject.rfc4514_string()
 
     @property
-    def pem(self):
+    def pem(self) -> str:
         """Return a PEM representation of this CSR."""
         return self.csr.public_bytes(serialization.Encoding.PEM)
 
     @property
-    def base64(self):
+    def base64(self) -> str:
         """Return a base64-encoded representation of this CSR."""
         return base64.b64encode(self.pem).decode("utf-8")
 
@@ -243,6 +246,7 @@ class Cert:
 
     This can be used to load and act upon an existing Cert.
     """
+
     def __init__(
         self, crt_data: Optional[bytes] = None, crt_file: Optional[str] = None
     ):
@@ -253,7 +257,7 @@ class Cert:
         """
         self.load(crt_data, crt_file)
 
-    def load_data(self, crt_data: bytes):
+    def load_data(self, crt_data: bytes) -> Any:
         """Load a Cert from a PEM-formatted byte string
         
         :param crt_data: a byte string of Cert data in PEM format
@@ -261,7 +265,7 @@ class Cert:
         """
         return x509.load_pem_x509_certificate(crt_data, default_backend())
 
-    def load_file(self, path: str):
+    def load_file(self, path: str) -> Any:
         """Load a Cert from a PEM file
         
         :param path: a filesystem path to a PEM Cert file
@@ -270,7 +274,7 @@ class Cert:
         with open(path, "rb") as f:
             return self.load_data(f.read())
 
-    def load(self, crt_data=None, crt_file=None):
+    def load(self, crt_data: Optional[bytes] = None, crt_file: Optional[str] = None):
         """Loads a Cert object based on crt_data or crt_file attribute"""
         if crt_data:
             self.crt = self.load_data(crt_data)
@@ -280,17 +284,17 @@ class Cert:
             self.crt = None
 
     @property
-    def pem(self):
+    def pem(self) -> str:
         """Return a PEM representation of this Cert."""
         return self.crt.public_bytes(serialization.Encoding.PEM)
 
     @property
-    def base64(self):
+    def base64(self) -> str:
         """Return a base64-encoded representation of this Cert."""
         return base64.b64encode(self.pem).decode("utf-8")
 
     @property
-    def subject(self):
+    def subject(self) -> str:
         """Return a subject string based on this object's attributes"""
         return self.crt.subject.rfc4514_string()
 
@@ -301,17 +305,18 @@ class Cert:
 
 
 class CSRandKey:
-    """A wrapper object to hold both a CSR and Key
+    """A wrapper object to hold both a related CSR and Key
 
     This can be used to generate a Key and CSR, or it can be used to load
     and act upon an existing Key and CSR.
     """
+
     def __init__(
         self,
         common_name,
         additional_subject: Optional[Dict] = None,
         dnsnames: Optional[Dict] = None,
-        key_size: int = 4092,
+        key_size: Optional[int] = 4092,
         key_file: Optional[str] = None,
         key_file_password: Optional[str] = None,
         csr_file: Optional[str] = None,
@@ -334,9 +339,7 @@ class CSRandKey:
             used.
         """
         self.key = Key(
-            key_size=key_size,
-            key_file=key_file,
-            key_file_password=key_file_password,
+            key_size=key_size, key_file=key_file, key_file_password=key_file_password,
         )
         self.csr = CSR(
             key=self.key,

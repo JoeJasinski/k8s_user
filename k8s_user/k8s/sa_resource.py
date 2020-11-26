@@ -11,7 +11,7 @@ class SAResource:
         name: str,
         namespace: str,
         metadata: Optional[Dict] = None,
-        extra_kwargs: Dict = {}, 
+        extra_kwargs: Dict = {},
     ):
         self._resource_cache = None
         self._resource_token_secret_cache = None
@@ -19,7 +19,8 @@ class SAResource:
         self.namespace = namespace
         self.metadata = metadata if isinstance(metadata, dict) else {}
         self.automount_service_account_token = extra_kwargs.get(
-            "automount_service_account_token", False)
+            "automount_service_account_token", False
+        )
 
     def get_text(self):
         """Return the text of the ServiceAccount that will be set to the
@@ -43,7 +44,8 @@ class SAResource:
 
         try:
             response = api_instance.read_namespaced_service_account(
-                name=self.name, namespace=self.namespace)
+                name=self.name, namespace=self.namespace
+            )
         except ApiException as exc:
             response = None
             if exc.status != 404:
@@ -62,17 +64,20 @@ class SAResource:
         if not self.resource_exists(api_client):
             api_instance = kubernetes.client.CoreV1Api(api_client)
             return api_instance.create_namespaced_service_account(
-                namespace=self.namespace, body=self.get_text())
+                namespace=self.namespace, body=self.get_text()
+            )
         else:
             return self.get_resource(api_client)
 
-    def get_token_secret_resource_name(self, api_client: kubernetes.client.ApiClient, timeout: int = 10):
+    def get_token_secret_resource_name(
+        self, api_client: kubernetes.client.ApiClient, timeout: int = 10
+    ):
         start = time.time()
         cert = None
         while time.time() - start < timeout:
             sa = self.get_resource(api_client, cache=False)
             try:
-                token = [s for s in sa.secrets if 'token' in s.name][0].name
+                token = [s for s in sa.secrets if "token" in s.name][0].name
             except (IndexError, AttributeError, TypeError):
                 token = None
             if token:
@@ -80,14 +85,17 @@ class SAResource:
             time.sleep(1)
         return token
 
-    def get_token_secret_resource(self, api_client: kubernetes.client.ApiClient, cache=True):
+    def get_token_secret_resource(
+        self, api_client: kubernetes.client.ApiClient, cache=True
+    ):
         if cache and self._resource_token_secret_cache:
             return self._resource_token_secret_cache
         api_instance = kubernetes.client.CoreV1Api(api_client)
         token_resource_name = self.get_token_secret_resource_name(api_client)
         try:
             response = api_instance.read_namespaced_secret(
-                name=token_resource_name, namespace=self.namespace)
+                name=token_resource_name, namespace=self.namespace
+            )
         except ApiException as exc:
             response = None
             if exc.status != 404:
@@ -101,7 +109,7 @@ class SAResource:
         while time.time() - start < timeout:
             secret = self.get_token_secret_resource(api_client, cache=False)
             try:
-                token = secret.data['token']
+                token = secret.data["token"]
             except (IndexError, AttributeError):
                 token = None
             if token:

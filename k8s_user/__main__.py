@@ -5,21 +5,24 @@ import kubernetes
 from kubernetes import client, config
 from .user import CSRK8sUser, TokenK8sUser
 
+
 def main(args=None):
 
     parser = argparse.ArgumentParser(
-        prog="k8s_user", description="Create K8S User", epilog="")
+        prog="k8s_user", description="Create K8S User", epilog=""
+    )
 
-    subparsers = parser.add_subparsers(help='', dest="user_type")
+    subparsers = parser.add_subparsers(help="", dest="user_type")
 
     parser.add_argument(
-        "-k", "--out-kubeconfig",
+        "-k",
+        "--out-kubeconfig",
         dest="out_kubeconfig",
         help=(
             "Output kubeconfig file path. A new kubeconfig "
             "file will be generated at this location with "
             "the credentials needed to login as the specified user."
-        )
+        ),
     )
     parser.add_argument(
         "--out-kubeconfig-context-name",
@@ -47,7 +50,7 @@ def main(args=None):
             "the new user. This kubeconfig requires permissions to create, view, "
             "and approve k8s CSR resources. If not specified, the default kubeconfig "
             "will be used."
-        ) ,
+        ),
         default=None,
     )
     parser.add_argument(
@@ -62,15 +65,15 @@ def main(args=None):
         ),
         default=None,
     )
-    parser_csr = subparsers.add_parser('csr', help='CSR User Generator')
+    parser_csr = subparsers.add_parser("csr", help="CSR User Generator")
     parser_csr.add_argument(
         "name",
         nargs="?",
         help=(
             "The name of the new user to create, as well as the name "
             "of the k8s resource that will be attached to this user."
-            )
-        )
+        ),
+    )
 
     parser_csr.add_argument(
         "--in-key",
@@ -93,34 +96,34 @@ def main(args=None):
     parser_csr.add_argument(
         "--in-csr",
         dest="in_csr",
-        help=("Optonally pass in a filesystem path to an existing CSR file in PEM "
-              "format. This requires the --in-key argument and requires that "
-              "the CSR belongs to the KEY (the modulus match)."),
+        help=(
+            "Optonally pass in a filesystem path to an existing CSR file in PEM "
+            "format. This requires the --in-key argument and requires that "
+            "the CSR belongs to the KEY (the modulus match)."
+        ),
         default=None,
     )
 
-    parser_token = subparsers.add_parser('sa', help='SA Token User Generator')
+    parser_token = subparsers.add_parser("sa", help="SA Token User Generator")
     parser_token.add_argument(
         "name",
         nargs="?",
         help=(
             "The name of the new user to create, as well as the name "
             "of the Service Account resource that will be attached to this user."
-            )
-        )
+        ),
+    )
     parser_token.add_argument(
         "namespace",
         nargs="?",
-        default='default',
-        help=(
-            "The namespace of the service account associated with the user."
-            )
-        )
+        default="default",
+        help=("The namespace of the service account associated with the user."),
+    )
 
     args = parser.parse_args()
     print(args)
 
-    #sys.exit(1)
+    # sys.exit(1)
 
     if not args.user_type:
         print("user_type argument must be specified")
@@ -152,23 +155,20 @@ def main(args=None):
             out_kubeconfig=out_kubeconfig,
         )
         if args.user_type == "csr":
-            user = CSRK8sUser(
-                name=args.name,
-            )
+            user = CSRK8sUser(name=args.name,)
 
-            inputs = {**dict(
-                creds_dir=out_directory,
-                in_key=args.in_key,
-                in_key_password=args.in_key_password,
-                in_csr=args.in_csr,
-            ), **inputs_common}
+            inputs = {
+                **dict(
+                    creds_dir=out_directory,
+                    in_key=args.in_key,
+                    in_key_password=args.in_key_password,
+                    in_csr=args.in_csr,
+                ),
+                **inputs_common,
+            }
         elif args.user_type == "sa":
-            user = TokenK8sUser(
-                name=args.name,
-            )
-            inputs = {**dict(
-                namespace=args.namespace,
-             ), **inputs_common}
+            user = TokenK8sUser(name=args.name,)
+            inputs = {**dict(namespace=args.namespace,), **inputs_common}
         else:
             raise Exception("Must include a user_type as argument")
         user.create(api_client, inputs)

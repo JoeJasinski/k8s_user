@@ -3,13 +3,12 @@ from . import StepReturn, BaseStep, EndStep, WorkflowBase
 from ..k8s.sa_resource import SAResource
 
 
-TokenBundle = collections.namedtuple(
-    "TokenBundle", "user_name user_token")
+TokenBundle = collections.namedtuple("TokenBundle", "user_name user_token")
 
 
 class ResourceExistsStep(BaseStep):
 
-    name="sa_resource_exists"
+    name = "sa_resource_exists"
 
     def __init__(self, inputs):
         self.name = inputs.get("name")
@@ -20,42 +19,37 @@ class ResourceExistsStep(BaseStep):
     def run(self) -> StepReturn:
 
         self.user.sa_resource = SAResource(
-            name=self.user.name,
-            namespace=self.namespace,
-            metadata=self.metadata,
+            name=self.user.name, namespace=self.namespace, metadata=self.metadata,
         )
         exists = self.user.sa_resource.resource_exists(self.api_client)
         return StepReturn(
-            next_step='sa_get_or_create_resource',
-            message="resouce exists" if exists else "resource does not exist")
+            next_step="sa_get_or_create_resource",
+            message="resouce exists" if exists else "resource does not exist",
+        )
 
 
 class GetorCreateSAStep(BaseStep):
 
-    name="sa_get_or_create_resource"
+    name = "sa_get_or_create_resource"
 
     def run(self) -> StepReturn:
         self.user.sa_resource.create(self.api_client)
-        return StepReturn(
-            next_step='get_token',
-            message="token retrieved")
+        return StepReturn(next_step="get_token", message="token retrieved")
 
 
 class GetTokenStep(BaseStep):
 
-    name="get_token"
+    name = "get_token"
 
     def run(self) -> StepReturn:
         token_str = self.user.sa_resource.get_token(self.api_client)
         self.user.token = token_str
-        return StepReturn(
-            next_step='make_kubeconfig',
-            message="token generated")
+        return StepReturn(next_step="make_kubeconfig", message="token generated")
 
 
 class MakeKubeConfigStep(BaseStep):
 
-    name="make_kubeconfig"
+    name = "make_kubeconfig"
 
     def __init__(self, inputs):
         self.cluster_name = inputs.get("cluster_name")
@@ -65,24 +59,18 @@ class MakeKubeConfigStep(BaseStep):
 
     def run(self) -> StepReturn:
 
-        tokenbundle = TokenBundle(
-            user_name=self.user.name,
-            user_token=self.user.token,
-        )
+        tokenbundle = TokenBundle(user_name=self.user.name, user_token=self.user.token,)
         self.user.kubeconfig = self.kubeconfig_klass(
-            self.api_client, self.cluster_name, self.context_name,
-            tokenbundle,
+            self.api_client, self.cluster_name, self.context_name, tokenbundle,
         )
         self.user.kubeconfig_dict = self.user.kubeconfig.generate()
 
-        return StepReturn(
-            next_step='save_kubeconfig',
-            message="kubeconfig generated")
+        return StepReturn(next_step="save_kubeconfig", message="kubeconfig generated")
 
 
 class SaveKubeconfigStep(BaseStep):
 
-    name="save_kubeconfig"
+    name = "save_kubeconfig"
 
     def __init__(self, inputs):
         self.out_kubeconfig = inputs.get("out_kubeconfig")
@@ -91,8 +79,8 @@ class SaveKubeconfigStep(BaseStep):
     def run(self) -> StepReturn:
         self.user.kubeconfig.save(self.out_kubeconfig)
         return StepReturn(
-            next_step='end',
-            message=f"kubeconfig saved to {self.out_kubeconfig}")
+            next_step="end", message=f"kubeconfig saved to {self.out_kubeconfig}"
+        )
 
 
 class UserTokenWorkflow(WorkflowBase):

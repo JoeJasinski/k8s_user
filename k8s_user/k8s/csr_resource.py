@@ -14,6 +14,7 @@ class CSRResource:
     :param groups: RBAC groups to add to this CSR (defaults to ["system:authenticated"])
     :param usages: CSR usages (defaults to ["client auth"])
     """
+
     def __init__(
         self,
         name: str,
@@ -42,7 +43,9 @@ class CSRResource:
             ),
         )
 
-    def get_resource(self, api_client: kubernetes.client.ApiClient, cache=True):
+    def get_resource(
+        self, api_client: kubernetes.client.ApiClient, cache: Optional[bool] = True
+    ):
         """Get the CertificateSigningRequest object from the kubernetes cluster based on 
         the self.name. If cache is set to True, then cache the result and fetch from
         the cache on subsequent lookups.
@@ -76,9 +79,10 @@ class CSRResource:
     def approve(
         self,
         api_client: kubernetes.client.ApiClient,
-        message: str = "This certificate was approved by the Python Client.",
-        reason: str = "ApprovedForUser",
+        message: Optional[str] = "This certificate was approved by the Python Client.",
+        reason: Optional[str] = "ApprovedForUser",
     ):
+        """Approve the CSR in Kubernetes"""
         csr_status = self.get_resource(api_client, cache=False)
         # create an approval condition
         approval_condition = kubernetes.client.V1beta1CertificateSigningRequestCondition(
@@ -98,7 +102,9 @@ class CSRResource:
         self._resource_cache = response
         return response
 
-    def get_cert(self, api_client: kubernetes.client.ApiClient, timeout: int = 10):
+    def get_cert(
+        self, api_client: kubernetes.client.ApiClient, timeout: Optional[int] = 10
+    ):
         """Get the certificate from the CSR object"""
         start = time.time()
         cert = None

@@ -29,12 +29,10 @@ class GenericConfigGen:
 
 class ClusterConfigGen:
     """Add server information to a kubeconfig"""
+
     def __init__(
-            self,
-            api_client: kubernetes.client.ApiClient,
-            cluster_name: str,
-            **kwargs,
-            ):
+        self, api_client: kubernetes.client.ApiClient, cluster_name: str, **kwargs,
+    ):
         self.api_client = api_client
         self.cluster_name = cluster_name
 
@@ -65,11 +63,8 @@ class ClusterConfigGen:
 
 class CSRUserConfigGen:
     """Add User information to a kubeconfig"""
-    def __init__(
-            self, 
-            api_client: kubernetes.client.ApiClient,
-            keybundle,
-            **kwargs):
+
+    def __init__(self, api_client: kubernetes.client.ApiClient, keybundle, **kwargs):
         self.api_client = api_client
         self.keybundle = keybundle
 
@@ -96,11 +91,8 @@ class CSRUserConfigGen:
 
 class TokenUserConfigGen:
     """Add a token to a kubeconfig"""
-    def __init__(
-            self,
-            api_client: kubernetes.client.ApiClient,
-            tokenbundle,
-            **kwargs):
+
+    def __init__(self, api_client: kubernetes.client.ApiClient, tokenbundle, **kwargs):
         self.api_client = api_client
         self.tokenbundle = tokenbundle
 
@@ -109,9 +101,7 @@ class TokenUserConfigGen:
             "users": [
                 {
                     "name": self.tokenbundle.user_name,
-                    "user": {
-                        "token": self.tokenbundle.user_token,
-                    },
+                    "user": {"token": self.tokenbundle.user_token,},
                 },
             ]
         }
@@ -121,12 +111,12 @@ class TokenUserConfigGen:
 
 
 class KubeConfigBase:
-
     def __init__(
-            self,
-            api_client: kubernetes.client.ApiClient,
-            config_gen_klasses: Optional[Dict] = None,
-            **kwargs):
+        self,
+        api_client: kubernetes.client.ApiClient,
+        config_gen_klasses: Optional[Dict] = None,
+        **kwargs,
+    ):
         self.api_client = api_client
         self.kubeconfig_dict = {}
         self.config_kwargs = {}
@@ -167,9 +157,8 @@ class CSRKubeConfig(KubeConfigBase):
         **kwargs,
     ):
         super().__init__(
-            api_client=api_client,
-            config_gen_klasses=config_gen_klasses,
-            **kwargs)
+            api_client=api_client, config_gen_klasses=config_gen_klasses, **kwargs
+        )
 
         updates = {
             "cluster_name": cluster_name,
@@ -183,17 +172,17 @@ class CSRKubeConfig(KubeConfigBase):
         return (
             {"apiVersion": "v1", "kind": "Config", "preferences": {}},
             {
-                "current-context": self.config_kwargs['context_name'],
+                "current-context": self.config_kwargs["context_name"],
                 "contexts": [
                     {
                         "context": {
-                            "cluster": self.config_kwargs['cluster_name'],
-                            "user": self.config_kwargs['keybundle'].user_name,
+                            "cluster": self.config_kwargs["cluster_name"],
+                            "user": self.config_kwargs["keybundle"].user_name,
                         },
-                        "name": self.config_kwargs['context_name'],
+                        "name": self.config_kwargs["context_name"],
                     },
                 ],
-            }
+            },
         )
 
 
@@ -216,9 +205,8 @@ class TokenKubeConfig(KubeConfigBase):
         **kwargs,
     ):
         super().__init__(
-            api_client=api_client,
-            config_gen_klasses=config_gen_klasses,
-            **kwargs)
+            api_client=api_client, config_gen_klasses=config_gen_klasses, **kwargs
+        )
 
         updates = {
             "cluster_name": cluster_name,
@@ -232,15 +220,15 @@ class TokenKubeConfig(KubeConfigBase):
         return (
             {"apiVersion": "v1", "kind": "Config", "preferences": {}},
             {
-                "current-context": self.config_kwargs['context_name'],
+                "current-context": self.config_kwargs["context_name"],
                 "contexts": [
                     {
                         "context": {
-                            "cluster": self.config_kwargs['cluster_name'],
-                            "user": self.config_kwargs['tokenbundle'].user_name,
+                            "cluster": self.config_kwargs["cluster_name"],
+                            "user": self.config_kwargs["tokenbundle"].user_name,
                         },
-                        "name": self.config_kwargs['context_name'],
+                        "name": self.config_kwargs["context_name"],
                     },
                 ],
-            }
+            },
         )

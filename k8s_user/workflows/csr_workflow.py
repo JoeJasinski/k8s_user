@@ -9,7 +9,7 @@ from . import StepReturn, BaseStep, EndStep, WorkflowBase
 
 class GetCSRandKeyStep(BaseStep):
 
-    name="get_csr_and_key"
+    name = "get_csr_and_key"
 
     def __init__(self, inputs):
         self.in_key = inputs.get("in_key")
@@ -28,18 +28,20 @@ class GetCSRandKeyStep(BaseStep):
         self.user.csr_resource = CSRResource(
             name=self.user.name,
             csr_str=self.user.candk.csr.base64,
-            metadata=self.metadata
+            metadata=self.metadata,
         )
         return StepReturn(
-            next_step='save_key',
+            next_step="save_key",
             message=(
                 f"key {'created' if self.user.candk.key.created else 'loaded'}; "
-                f"csr {'created' if self.user.candk.csr.created else 'loaded'}"))
+                f"csr {'created' if self.user.candk.csr.created else 'loaded'}"
+            ),
+        )
 
 
 class SaveKeyStep(BaseStep):
 
-    name="save_key"
+    name = "save_key"
 
     def __init__(self, inputs):
         self.in_key = inputs.get("in_key")
@@ -55,13 +57,14 @@ class SaveKeyStep(BaseStep):
             self.user.candk.key.save(key_path)
             saved = True
         return StepReturn(
-            next_step='save_csr',
-            message=f"key saved to {key_path}" if saved else "skipped save")
+            next_step="save_csr",
+            message=f"key saved to {key_path}" if saved else "skipped save",
+        )
 
 
 class SaveCSRStep(BaseStep):
 
-    name="save_csr"
+    name = "save_csr"
 
     def __init__(self, inputs):
         self.in_csr = inputs.get("in_csr")
@@ -75,62 +78,59 @@ class SaveCSRStep(BaseStep):
             self.user.candk.csr.save(csr_path)
             saved = True
         return StepReturn(
-            next_step='csr_resource_exists',
-            message=f"csr saved to {csr_path}" if saved else "skipped save")
+            next_step="csr_resource_exists",
+            message=f"csr saved to {csr_path}" if saved else "skipped save",
+        )
 
 
 class ResourceExistsStep(BaseStep):
 
-    name="csr_resource_exists"
+    name = "csr_resource_exists"
 
     def run(self) -> StepReturn:
         exists = self.user.csr_resource.resource_exists(self.api_client)
         if exists:
             return StepReturn(
-                next_step='csr_approve_resource',
-                message="csr resource exists")
+                next_step="csr_approve_resource", message="csr resource exists"
+            )
         return StepReturn(
-            next_step='csr_create_resource',
-            message="csr resource does not exist yet.")
+            next_step="csr_create_resource", message="csr resource does not exist yet."
+        )
 
 
 class CreateResourceStep(BaseStep):
 
-    name="csr_create_resource"
+    name = "csr_create_resource"
 
     def run(self) -> StepReturn:
         self.user.csr_resource.create(self.api_client)
         return StepReturn(
-            next_step='csr_approve_resource',
-            message="csr resource created")
+            next_step="csr_approve_resource", message="csr resource created"
+        )
 
 
 class ApproveResourceStep(BaseStep):
 
-    name="csr_approve_resource"
+    name = "csr_approve_resource"
 
     def run(self) -> StepReturn:
         self.user.csr_resource.approve(self.api_client)
-        return StepReturn(
-            next_step='get_cert',
-            message="csr resource approved")
+        return StepReturn(next_step="get_cert", message="csr resource approved")
 
 
 class GetCertStep(BaseStep):
 
-    name="get_cert"
+    name = "get_cert"
 
     def run(self) -> StepReturn:
         cert_str = self.user.csr_resource.get_cert(self.api_client)
         self.user.crt = Cert(crt_data=base64.b64decode(cert_str))
-        return StepReturn(
-            next_step='save_cert',
-            message="crt retrieved from k8s")
+        return StepReturn(next_step="save_cert", message="crt retrieved from k8s")
 
 
 class SaveCertStep(BaseStep):
 
-    name="save_cert"
+    name = "save_cert"
 
     def __init__(self, inputs):
         self.creds_dir = inputs.get("creds_dir")
@@ -143,13 +143,14 @@ class SaveCertStep(BaseStep):
             self.user.crt.save(crt_path)
             saved = True
         return StepReturn(
-            next_step='make_kubeconfig',
-            message=f"crt saved to {crt_path}" if saved else "skipped save")
+            next_step="make_kubeconfig",
+            message=f"crt saved to {crt_path}" if saved else "skipped save",
+        )
 
 
 class MakeKubeConfigStep(BaseStep):
 
-    name="make_kubeconfig"
+    name = "make_kubeconfig"
 
     def __init__(self, inputs):
         self.cluster_name = inputs.get("cluster_name")
@@ -170,14 +171,12 @@ class MakeKubeConfigStep(BaseStep):
         )
         self.user.kubeconfig_dict = self.user.kubeconfig.generate()
 
-        return StepReturn(
-            next_step='save_kubeconfig',
-            message="kubeconfig generated")
+        return StepReturn(next_step="save_kubeconfig", message="kubeconfig generated")
 
 
 class SaveKubeconfigStep(BaseStep):
 
-    name="save_kubeconfig"
+    name = "save_kubeconfig"
 
     def __init__(self, inputs):
         self.out_kubeconfig = inputs.get("out_kubeconfig")
@@ -186,8 +185,8 @@ class SaveKubeconfigStep(BaseStep):
     def run(self) -> StepReturn:
         self.user.kubeconfig.save(self.out_kubeconfig)
         return StepReturn(
-            next_step='end',
-            message=f"kubeconfig saved to {self.out_kubeconfig}")
+            next_step="end", message=f"kubeconfig saved to {self.out_kubeconfig}"
+        )
 
 
 class UserCSRWorkflow(WorkflowBase):
