@@ -45,7 +45,7 @@ def main(args=None):
         help=(
             "This is the name of the kubeconfig that will be used to create "
             "the new user. This kubeconfig requires permissions to create, view, "
-            "and approve k8s CSR resources. If not specified, the default kubconfig "
+            "and approve k8s CSR resources. If not specified, the default kubeconfig "
             "will be used."
         ) ,
         default=None,
@@ -58,7 +58,7 @@ def main(args=None):
             "If passed, the newly created public key, CSR, and cert files "
             "will be saved to this location in PEM format. This is in case "
             "you want to have these creds available in PEM format in "
-            "addition to having the creds embeded in the kubeconfig file."
+            "addition to having the creds embedded in the kubeconfig file."
         ),
         default=None,
     )
@@ -95,7 +95,7 @@ def main(args=None):
         dest="in_csr",
         help=("Optonally pass in a filesystem path to an existing CSR file in PEM "
               "format. This requires the --in-key argument and requires that "
-              "the CSR belongs to the KEY (the moduluses match)."),
+              "the CSR belongs to the KEY (the modulus match)."),
         default=None,
     )
 
