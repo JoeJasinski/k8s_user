@@ -28,6 +28,7 @@ class GenericConfigGen:
 
 
 class ClusterConfigGen:
+    """Add server information to a kubeconfig"""
     def __init__(
             self,
             api_client: kubernetes.client.ApiClient,
@@ -63,6 +64,7 @@ class ClusterConfigGen:
 
 
 class CSRUserConfigGen:
+    """Add User information to a kubeconfig"""
     def __init__(
             self, 
             api_client: kubernetes.client.ApiClient,
@@ -93,7 +95,7 @@ class CSRUserConfigGen:
 
 
 class TokenUserConfigGen:
-
+    """Add a token to a kubeconfig"""
     def __init__(
             self,
             api_client: kubernetes.client.ApiClient,
@@ -147,6 +149,7 @@ class KubeConfigBase:
 
 
 class CSRKubeConfig(KubeConfigBase):
+    """Generate a Kubeconfig with user csr"""
 
     _config_gen_klasses = {
         "cluster": ClusterConfigGen,
@@ -195,6 +198,7 @@ class CSRKubeConfig(KubeConfigBase):
 
 
 class TokenKubeConfig(KubeConfigBase):
+    """Generate a Kubeconfig with user token"""
 
     _config_gen_klasses = {
         "cluster": ClusterConfigGen,

@@ -12,7 +12,6 @@ def main(args=None):
 
     subparsers = parser.add_subparsers(help='', dest="user_type")
 
-
     parser.add_argument(
         "-k", "--out-kubeconfig",
         dest="out_kubeconfig",

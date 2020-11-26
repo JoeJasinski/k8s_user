@@ -28,5 +28,6 @@ clean: build
 		bash -c "rm -rf .coverage reports/ .pytest_cache/ \
 			&& find . -name '*.pyc' -exec rm -f {} \;"
 
+
 package:
 	python setup.py sdist bdist_wheel

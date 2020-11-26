@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="kubernetes-user",
-    version="0.0.2",
+    version="0.0.3",
     author="Joe Jasinski",
     description="A package for creating kubernetes users.",
     long_description=long_description,
