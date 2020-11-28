@@ -159,7 +159,7 @@ csr.resource_exists(api_client)
 # Approve the k8s CSR resource
 approved_csr_obj = csr.approve(api_client)
 
-# Get the certificate file
+# Get the certificate as a base64 encoded PEM string
 crt_str = csr.get_cert(api_client)
 
 # Save the certificate to a file

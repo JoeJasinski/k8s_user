@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import kubernetes
 from k8s_user.pki import KeyBundle
-from k8s_user.kubeconfig import (
+from k8s_user.k8s.kubeconfig import (
     GenericConfigGen, ClusterConfigGen,
     CSRUserConfigGen, CSRKubeConfig, TokenKubeConfig)
 from k8s_user.workflows.sa_workflow import TokenBundle

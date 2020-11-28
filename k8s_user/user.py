@@ -5,8 +5,8 @@ import collections
 from abc import ABC, abstractmethod
 import yaml
 from .k8s.csr_resource import CSRResource
+from .k8s.kubeconfig import CSRKubeConfig, TokenKubeConfig
 from .pki import Cert, CSRandKey, KeyBundle
-from .kubeconfig import CSRKubeConfig, TokenKubeConfig
 from .workflows.csr_workflow import UserCSRWorkflow
 from .workflows.sa_workflow import UserTokenWorkflow
 

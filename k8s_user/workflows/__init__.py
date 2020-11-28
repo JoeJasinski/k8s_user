@@ -47,6 +47,6 @@ class WorkflowBase(abc.ABC):
         return None
 
     def start(self):
-        step = StepReturn(self.start_step, "")
-        while step.next_step:
-            step = self.step_instances[step.next_step]._run()
+        step_return = StepReturn(self.start_step, "")
+        while step_return.next_step:
+            step_return = self.step_instances[step_return.next_step]._run()

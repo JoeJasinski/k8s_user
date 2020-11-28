@@ -159,7 +159,6 @@ class MakeKubeConfigStep(BaseStep):
         super().__init__(inputs)
 
     def run(self) -> StepReturn:
-
         keybundle = KeyBundle(
             user_name=self.user.name,
             user_key=self.user.candk.key.base64,
