@@ -17,6 +17,7 @@ class K8sUser(ABC):
     def __init__(self, name: str):
         self.name = name
 
+    @abstractmethod
     def get_user_create_workflow_klass(self):
         return None
 
