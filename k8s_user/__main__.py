@@ -14,34 +14,7 @@ def main(args=None):
 
     subparsers = parser.add_subparsers(help="", dest="user_type")
 
-    parser.add_argument(
-        "-k",
-        "--out-kubeconfig",
-        dest="out_kubeconfig",
-        help=(
-            "Output kubeconfig file path. A new kubeconfig "
-            "file will be generated at this location with "
-            "the credentials needed to login as the specified user."
-        ),
-    )
-    parser.add_argument(
-        "--out-kubeconfig-context-name",
-        dest="out_context",
-        help=(
-            "When used with the --out-kubeconfig option, this is the "
-            "name of the kubeconfig context that will be associated with the user."
-        ),
-        default="default",
-    )
-    parser.add_argument(
-        "--out-kubeconfig-cluster-name",
-        dest="out_cluster",
-        help=(
-            "When used with the --out-kubeconfig option, this is the "
-            "name of the kubeconfig cluster that will be associated with the user"
-        ),
-        default="default",
-    )
+
     parser.add_argument(
         "--kubeconfig",
         dest="in_kubeconfig",
@@ -53,6 +26,7 @@ def main(args=None):
         ),
         default=None,
     )
+
     parser.add_argument(
         "-d",
         "--out-dir",
@@ -66,6 +40,38 @@ def main(args=None):
         default=None,
     )
     parser_csr = subparsers.add_parser("csr", help="CSR User Generator")
+
+    parser_csr.add_argument(
+        "-k",
+        "--out-kubeconfig",
+        dest="out_kubeconfig",
+        help=(
+            "Output kubeconfig file path. A new kubeconfig "
+            "file will be generated at this location with "
+            "the credentials needed to login as the specified user."
+        ),
+    )
+
+    parser_csr.add_argument(
+        "--out-kubeconfig-context-name",
+        dest="out_context",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig context that will be associated with the user."
+        ),
+        default="default",
+    )
+
+    parser_csr.add_argument(
+        "--out-kubeconfig-cluster-name",
+        dest="out_cluster",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig cluster that will be associated with the user"
+        ),
+        default="default",
+    )
+
     parser_csr.add_argument(
         "name",
         nargs="?",
@@ -84,6 +90,7 @@ def main(args=None):
         ),
         default=None,
     )
+
     parser_csr.add_argument(
         "--in-key-password",
         dest="in_key_password",
@@ -93,6 +100,7 @@ def main(args=None):
         ),
         default=None,
     )
+
     parser_csr.add_argument(
         "--in-csr",
         dest="in_csr",
@@ -106,6 +114,37 @@ def main(args=None):
 
     parser_token = subparsers.add_parser("sa", help="SA Token User Generator")
     parser_token.add_argument(
+        "-k",
+        "--out-kubeconfig",
+        dest="out_kubeconfig",
+        help=(
+            "Output kubeconfig file path. A new kubeconfig "
+            "file will be generated at this location with "
+            "the credentials needed to login as the specified user."
+        ),
+    )
+
+    parser_token.add_argument(
+        "--out-kubeconfig-context-name",
+        dest="out_context",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig context that will be associated with the user."
+        ),
+        default="default",
+    )
+
+    parser_token.add_argument(
+        "--out-kubeconfig-cluster-name",
+        dest="out_cluster",
+        help=(
+            "When used with the --out-kubeconfig option, this is the "
+            "name of the kubeconfig cluster that will be associated with the user"
+        ),
+        default="default",
+    )
+
+    parser_token.add_argument(
         "name",
         nargs="?",
         help=(
@@ -113,6 +152,7 @@ def main(args=None):
             "of the Service Account resource that will be attached to this user."
         ),
     )
+
     parser_token.add_argument(
         "namespace",
         nargs="?",
